@@ -1,0 +1,196 @@
+name: examples CI
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  windows-VC:
+    runs-on: windows-latest
+
+    steps:
+      - name: deploy sources
+        uses: actions/checkout@v3
+        with:
+          path: examples
+
+      - name: build/install examples
+        run: |
+             cd examples
+             mkdir build
+             mkdir install
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
+                   -B ./build -A x64 -T host=x64 .
+             cmake --build ./build -j `
+                   --config RelWithDebInfo `
+                   --target install
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WindowsVC
+          path: ./examples/install/
+
+  windows-clang:
+    runs-on: windows-latest
+
+    steps:
+      - name: deploy sources
+        uses: actions/checkout@v3
+        with:
+          path: examples
+
+      - name: build/install examples
+        run: |
+             cd examples
+             mkdir build
+             mkdir install
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
+                   -B ./build -A x64 -T ClangCL .
+             cmake --build ./build -j `
+                   --config RelWithDebInfo `
+                   --target install
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WindowsClang
+          path: ./examples/install/
+
+  ubuntu-gcc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: check dependencies
+        run: |
+          if (Get-Command nuget -ErrorAction Ignore) { exit 0 }
+
+          mkdir tools
+          Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe `
+                            -OutFile tools/nuget.exe    
+          @'
+          #!/bin/bash
+          set -e
+          exec mono "$(dirname "$0")/nuget.exe" "$@"
+          '@ | Out-File tools/nuget
+          chmod +x tools/nuget
+          "$pwd/tools" | Out-File $Env:GITHUB_PATH -Append -Encoding OEM
+
+          # sudo apt-get update
+          # sudo apt-get install dirmngr gnupg apt-transport-https ca-certificates software-properties-common
+          # sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+          # "deb [arch=amd64] https://download.mono-project.com/repo/ubuntu stable-focal main" |
+          #     sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+          sudo apt-get update
+          sudo apt-get install mono-complete
+
+      - name: deploy sources
+        uses: actions/checkout@v3
+        with:
+          path: examples
+
+      - name: build/install examples
+        run: |
+             cd examples
+             mkdir build
+             mkdir install
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
+                   -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+                   -B ./build .
+             cmake --build ./build -j --target install
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UbuntuGCC
+          path: ./examples/install/
+
+  ubuntu-clang:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: check dependencies
+        run: |
+          if (Get-Command nuget -ErrorAction Ignore) { exit 0 }
+
+          mkdir tools
+          Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe `
+                            -OutFile tools/nuget.exe    
+          @'
+          #!/bin/bash
+          set -e
+          exec mono "$(dirname "$0")/nuget.exe" "$@"
+          '@ | Out-File tools/nuget
+          chmod +x tools/nuget
+          "$pwd/tools" | Out-File $Env:GITHUB_PATH -Append -Encoding OEM
+
+          # sudo apt-get update
+          # sudo apt-get install dirmngr gnupg apt-transport-https ca-certificates software-properties-common
+          # sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+          # "deb [arch=amd64] https://download.mono-project.com/repo/ubuntu stable-focal main" |
+          #     sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+          sudo apt-get update
+          sudo apt-get install mono-complete
+
+      - name: deploy sources
+        uses: actions/checkout@v3
+        with:
+          path: examples
+
+      - name: build/install examples
+        env:
+          CXX: clang++
+        run: |
+             cd examples
+             mkdir build
+             mkdir install
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
+                   -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+                   -B ./build .
+             cmake --build ./build -j --target install
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UbuntuClang
+          path: ./examples/install/
+
+  macos-clang:
+    runs-on: macos-latest
+
+    steps:
+      - name: deploy sources
+        uses: actions/checkout@v3
+        with:
+          path: examples
+
+      - name: build/install examples
+        run: |
+             cd examples
+             mkdir build
+             mkdir install
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
+                   -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+                   -B ./build .
+             cmake --build ./build -j --target install
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacOSClang
+          path: ./examples/install/
+
+# vim: ft=yaml cursorcolumn

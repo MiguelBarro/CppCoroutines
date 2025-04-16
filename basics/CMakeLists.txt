@@ -12,11 +12,17 @@ target_compile_features(basics_common_setup INTERFACE cxx_std_20)
 # disable some warnings
 if(MSVC)
     target_compile_options(basics_common_setup INTERFACE /W4 /WX /wd4834)
-    if(CMAKE_GENERATOR_TOOLSET MATCHES "^([Cc][Ll][Aa][Nn][Gg][Cc][Ll])$")
-        target_compile_options(basics_common_setup INTERFACE -Wno-sign-compare -Wno-unused-lambda-capture)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(basics_common_setup INTERFACE
+            -Wno-sign-compare
+            -Wno-unused-lambda-capture
+        )
     endif()
 else()
-    target_compile_options(basics_common_setup INTERFACE -Wall -Wextra -pedantic -Werror -Wno-implicit-fallthrough)
+    target_compile_options(basics_common_setup INTERFACE
+        -Wall -Wextra -pedantic -Werror
+        -Wno-implicit-fallthrough
+    )
 endif()
 
 if(MSVC)

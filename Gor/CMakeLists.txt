@@ -45,21 +45,34 @@ endif()
 add_library(gor_common_setup INTERFACE)
 target_compile_features(gor_common_setup INTERFACE cxx_std_20)
 
-# disable some warnings
+# compiler specific options
 if(MSVC)
     target_compile_options(gor_common_setup INTERFACE /W4 /WX /wd4834)
-    if(CMAKE_GENERATOR_TOOLSET MATCHES "^([Cc][Ll][Aa][Nn][Gg][Cc][Ll])$")
-        target_compile_options(gor_common_setup INTERFACE -Wno-sign-compare -Wno-unused-lambda-capture)
-    endif()
-else()
-    target_compile_options(gor_common_setup INTERFACE -Wall -Wextra -pedantic -Werror
-        -Wno-implicit-fallthrough -Wno-format-overflow)
-endif()
 
-if(MSVC)
     target_compile_definitions(gor_common_setup INTERFACE
         _WIN32_WINNT=0x0A00
         _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
+    )
+elseif(LINUX)
+    target_compile_options(gor_common_setup INTERFACE
+        -Wall -Wextra -pedantic -Werror
+        -Wno-format-overflow
+        -Wno-implicit-fallthrough
+    )
+elseif(APPLE)
+    target_compile_options(gor_common_setup INTERFACE
+        -Wall -Wextra -pedantic -Werror
+    )
+endif()
+
+# Clang may run on any platform
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(gor_common_setup INTERFACE
+        -Wno-unknown-warning-option
+        -Wno-deprecated-declarations
+        -Wno-sign-compare
+        -Wno-unused-lambda-capture
+        -Wno-cast-function-type-mismatch
     )
 endif()
 

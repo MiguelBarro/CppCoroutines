@@ -13,9 +13,11 @@ struct generator
 {
     struct promise_type; // this type must be public for coroutine_traits to work it out
 
-    private:
+private:
 
     coroutine_handle<promise_type> _handle;
+
+public:
 
     generator(generator const&) = delete;
     generator(generator&& rhs)
@@ -25,7 +27,6 @@ struct generator
     }
     explicit generator(coroutine_handle<promise_type> handle) : _handle(handle) {}
 
-    public:
 
     ~generator()
     {
