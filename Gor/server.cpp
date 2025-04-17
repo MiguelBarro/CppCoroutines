@@ -12,6 +12,7 @@
 #include <functional>
 #include <iostream>
 #include <list>
+#include <memory>
 #include <thread>
 
 #include <asio.hpp>
@@ -23,8 +24,8 @@ std::future<void>
 session(asio::ip::tcp::socket socket,
         const size_t block_size)
 {
-    char* read_data = new char[block_size];
-    char* write_data = new char[block_size];
+    auto read_data = std::make_unique<char[]>(block_size);
+    auto write_data = std::make_unique<char[]>(block_size);
 
     try
     {
@@ -39,11 +40,11 @@ session(asio::ip::tcp::socket socket,
         for (;;)
         {
             // Receive data from the server
-            co_await async_read_some(socket, asio::buffer(read_data, block_size));
+            co_await async_read_some(socket, asio::buffer(read_data.get(), block_size));
             // Swap the buffers
             std::swap(read_data, write_data);
             // Send data to the server
-            co_await async_write(socket, asio::buffer(write_data, block_size));
+            co_await async_write(socket, asio::buffer(write_data.get(), block_size));
         }
     }
     catch (asio::system_error& e)
@@ -58,10 +59,6 @@ session(asio::ip::tcp::socket socket,
 
     // Close the socket
     socket.close();
-
-    // tidy up
-    delete[] read_data;
-    delete[] write_data;
 }
 
 std::future<void>

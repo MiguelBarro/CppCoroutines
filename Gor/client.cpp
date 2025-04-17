@@ -14,6 +14,7 @@
 #include <functional>
 #include <iostream>
 #include <list>
+#include <memory>
 #include <string>
 #include <thread>
 #include <utility>
@@ -58,8 +59,8 @@ session(asio::io_service& ios,
         std::atomic_bool& stop)
 {
     asio::ip::tcp::socket socket(ios);
-    char* read_data = new char[block_size];
-    char* write_data = new char[block_size];
+    auto read_data = std::make_unique<char[]>(block_size);
+    auto write_data = std::make_unique<char[]>(block_size);
     size_t bytes_written = 0;
     size_t bytes_read = 0;
 
@@ -76,9 +77,9 @@ session(asio::io_service& ios,
         while (!stop)
         {
             // Send data to the server
-            bytes_written += co_await async_write(socket, asio::buffer(write_data, block_size));
+            bytes_written += co_await async_write(socket, asio::buffer(write_data.get(), block_size));
             // Receive data from the server
-            bytes_read += co_await async_read_some(socket, asio::buffer(read_data, block_size));
+            bytes_read += co_await async_read_some(socket, asio::buffer(read_data.get(), block_size));
             // Swap the buffers
             std::swap(read_data, write_data);
         }
@@ -90,10 +91,6 @@ session(asio::io_service& ios,
 
     // Close the socket
     socket.close();
-
-    // tidy up
-    delete[] read_data;
-    delete[] write_data;
 
     co_return std::pair<size_t, size_t>{bytes_written, bytes_read};
 }
