@@ -54,7 +54,10 @@ jobs:
           path: examples
 
       - name: build/install examples
+        id: build
+        continue-on-error: true
         run: |
+             $ErrorActionPreference = 'Continue'
              cd examples
              mkdir build
              mkdir install
@@ -62,9 +65,37 @@ jobs:
                    -B ./build -A x64 -T ClangCL .
              cmake --build ./build -j `
                    --config RelWithDebInfo `
-                   --target install
+                   --target install | Tee-Object -Variable cmake_log
+
+             if($LASTEXITCODE)
+             {
+               $pattern = 'clang-cl : message : diagnostic msg: (.*) \['
+               $paths = ($cmake_log | sls -AllMatches -Pattern $pattern).Matches.Groups |
+                   ? { $_.GetType().Name -eq 'Group' } | select -ExpandProperty Value 
+               $paths = $paths -join "`r"
+               "reports_paths=$paths" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append -Encoding OEM
+
+               Get-Content $Env:GITHUB_OUTPUT
+               exit 1
+             }
+
+      - name: Upload error info artifact on compiler failure
+        if: ${{ steps.build.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: WindowsClangErrorReports
+          path: |
+                ${{ steps.build.outputs.reports_paths }}
+
+      - name: 
+        if: ${{ steps.build.outcome == 'failure' }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+                  core.setFailed('Build failed and error reports uploaded')
 
       - name: Upload Artifact
+        if: ${{ steps.build.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: WindowsClang
