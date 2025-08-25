@@ -45,6 +45,14 @@ Blogs:
 1. [Raymond Chen. Debugging coroutine handles: The Microsoft Visual C++ compiler, clang, and gcc](https://devblogs.microsoft.com/oldnewthing/20211007-00/?p=105777)
 1. [Raymond Chen. Debugging coroutine handles: Looking for the source of a one-byte memory corruption](https://devblogs.microsoft.com/oldnewthing/20220930-00/?p=107233)
 1. [Raymond Chen. Speculation on the design decisions that led to the common ABI for C++ coroutines](https://devblogs.microsoft.com/oldnewthing/20220103-00/?p=106109)
+1. [Kenny Kerr. C++/WinRT: Understanding Async](https://kennykerrca.wordpress.com/2018/03/01/cppwinrt-understanding-async/)
+1. [Kenny Kerr. C++/WinRT: Handling Async Completion](https://kennykerrca.wordpress.com/2018/03/08/cppwinrt-handling-async-completion/)
+1. [Kenny Kerr. C++/WinRT: Producing Async Objects](https://kennykerrca.wordpress.com/2018/03/09/cppwinrt-producing-async-objects/)
+1. [Kenny Kerr. C++/WinRT: Coroutines and the Thread Pool](https://kennykerrca.wordpress.com/2018/03/13/cppwinrt-coroutines-thread-pool/)
+1. [Kenny Kerr. C++/WinRT: Coroutines and the Calling Context](https://kennykerrca.wordpress.com/2018/04/03/cppwinrt-understanding-coroutines-and-the-calling-context/)
+1. [Kenny Kerr. New in C++/WinRT: Async Cancellation Callback for Coroutines](https://kennykerrca.wordpress.com/2018/07/11/cppwinrt-async-cancellation-callback/)
+1. [Kenny Kerr. Meet C++/WinRT 2.0: Async Timeouts Made Easy](https://kennykerrca.wordpress.com/2019/06/10/cppwinrt-async-timeouts-made-easy/)
+1. [Kenny Kerr. Meet C++/WinRT 2.0: resume_foreground Improvements](https://kennykerrca.wordpress.com/2019/07/01/cppwinrt-resume_foreground-improvements/)
 
 Talks:
 1. [James McNellis "Introduction to C++ Coroutines"](https://youtu.be/ZTqHjjm86Bw)
