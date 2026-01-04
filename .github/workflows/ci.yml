@@ -105,29 +105,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: check dependencies
-        run: |
-          if (Get-Command nuget -ErrorAction Ignore) { exit 0 }
-
-          mkdir tools
-          Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe `
-                            -OutFile tools/nuget.exe    
-          @'
-          #!/bin/bash
-          set -e
-          exec mono "$(dirname "$0")/nuget.exe" "$@"
-          '@ | Out-File tools/nuget
-          chmod +x tools/nuget
-          "$pwd/tools" | Out-File $Env:GITHUB_PATH -Append -Encoding OEM
-
-          # sudo apt-get update
-          # sudo apt-get install dirmngr gnupg apt-transport-https ca-certificates software-properties-common
-          # sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-          # "deb [arch=amd64] https://download.mono-project.com/repo/ubuntu stable-focal main" |
-          #     sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-          sudo apt-get update
-          sudo apt-get install mono-complete
-
       - name: deploy sources
         uses: actions/checkout@v3
         with:
@@ -153,29 +130,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: check dependencies
-        run: |
-          if (Get-Command nuget -ErrorAction Ignore) { exit 0 }
-
-          mkdir tools
-          Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe `
-                            -OutFile tools/nuget.exe    
-          @'
-          #!/bin/bash
-          set -e
-          exec mono "$(dirname "$0")/nuget.exe" "$@"
-          '@ | Out-File tools/nuget
-          chmod +x tools/nuget
-          "$pwd/tools" | Out-File $Env:GITHUB_PATH -Append -Encoding OEM
-
-          # sudo apt-get update
-          # sudo apt-get install dirmngr gnupg apt-transport-https ca-certificates software-properties-common
-          # sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-          # "deb [arch=amd64] https://download.mono-project.com/repo/ubuntu stable-focal main" |
-          #     sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-          sudo apt-get update
-          sudo apt-get install mono-complete
-
       - name: deploy sources
         uses: actions/checkout@v3
         with:
