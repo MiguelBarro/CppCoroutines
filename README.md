@@ -23,6 +23,8 @@ automatically. Nuget used to be available in all Github runners but support for 
 Numbat**. The main issue is that nuget is a .NET framework/desktop tool.
 On linux it can only be run by [mono](https://www.mono-project.com/). Porting nuget to .NET Core does not seem to be
 in Microsoft roadmap.
+`dotnet cli` is used as a workaround to install nuget packages when `nuget` is missing, since it is available in all
+Github runners.
 
 ## Index
 
