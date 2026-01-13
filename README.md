@@ -30,6 +30,7 @@ Github runners.
 
 1. [McNellis examples](./basics/README.md)
 1. [Gor Nishanov](./Gor/README.md)
+1. [C++/WinRT examples](./winrt/README.md)
 
 ## References
 
