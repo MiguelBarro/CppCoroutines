@@ -95,7 +95,7 @@ target_compile_definitions(gor_common_setup INTERFACE ASIO_STANDALONE)
 
 target_link_libraries(gor_common_setup INTERFACE Threads::Threads)
 
-# cunstomize binary
+# customize binary
 set_target_properties(gor_common_setup PROPERTIES RELEASE_POSTFIX "-${PROJECT_VERSION}")
 set_target_properties(gor_common_setup PROPERTIES DEBUG_POSTFIX "-${PROJECT_VERSION}d")
 

@@ -10,3 +10,8 @@ add_subdirectory(basics)
 
 # include Gor Nishanov's CppCon 2017 examples
 add_subdirectory(Gor)
+
+# include winrt examples if apply
+if (WIN32)
+    add_subdirectory(winrt)
+endif()
