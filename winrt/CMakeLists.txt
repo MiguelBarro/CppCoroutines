@@ -10,9 +10,18 @@ project(WinRTExamples
     HOMEPAGE_URL https://github.com/MiguelBarro/CppCoroutines 
     LANGUAGES CXX)
 
+# User set up
+option(USE_SDK_HEADERS "Use the Windows SDK provided headers instead of the repo ones" OFF)
+
 # Create common setup for the executables
 add_library(winrt_common_setup INTERFACE)
 target_compile_features(winrt_common_setup INTERFACE cxx_std_20)
+
+if(NOT USE_SDK_HEADERS)
+    target_include_directories(winrt_common_setup INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/projection
+    )
+endif()
 
 # compiler specific options
 if(MSVC)
