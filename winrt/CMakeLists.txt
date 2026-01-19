@@ -57,10 +57,19 @@ target_link_libraries(winrt_simple_client PRIVATE winrt_common_setup)
 add_executable(winrt_simple_server winrt_simple_server.cpp)
 target_link_libraries(winrt_simple_server PRIVATE winrt_common_setup)
 
+# winrt flavour of asio performance tests
+# the winrt framework is extended to accomodate custom threadpool awaiters
+add_executable(winrt_client winrt_client.cpp)
+target_link_libraries(winrt_client PRIVATE winrt_common_setup)
+add_executable(winrt_server winrt_server.cpp)
+target_link_libraries(winrt_server PRIVATE winrt_common_setup)
+
 # install
 install(
     TARGETS
         winrt_simple_client
         winrt_simple_server
+        winrt_client
+        winrt_server
     RUNTIME DESTINATION .
 )
