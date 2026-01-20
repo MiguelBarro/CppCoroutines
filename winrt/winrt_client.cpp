@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Networking.Sockets.h>
 #include <winrt/Windows.Storage.Streams.h>
@@ -106,7 +107,7 @@ session(threadpool_winrt::environment&,
     measures.push_back(bytes_read);
 
     // Wrap as a WinRT IVector
-    co_return single_threaded_vector<uint32_t>(move(measures));
+    co_return single_threaded_vector<uint32_t>(std::move(measures));
 }
 
 winrt::Windows::Foundation::IAsyncAction

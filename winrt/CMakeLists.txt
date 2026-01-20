@@ -42,6 +42,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         -Wno-sign-compare
         -Wno-unused-lambda-capture
         -Wno-cast-function-type-mismatch
+        -Wno-nontrivial-memcall
     )
 endif()
 

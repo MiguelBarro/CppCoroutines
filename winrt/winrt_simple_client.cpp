@@ -103,7 +103,7 @@ session(winrt::Windows::Networking::EndpointPair const& endpointPair,
     measures.push_back(bytes_read);
 
     // Wrap as a WinRT IVector
-    co_return single_threaded_vector<uint32_t>(move(measures));
+    co_return single_threaded_vector<uint32_t>(std::move(measures));
 }
 
 winrt::Windows::Foundation::IAsyncAction

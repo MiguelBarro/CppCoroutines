@@ -21,18 +21,18 @@ namespace threadpool_winrt
         PTP_POOL pool_ = nullptr;
         PTP_CLEANUP_GROUP cleanup_ = nullptr;
 
-        void destroy()
+        static void destroy(environment& env) noexcept
         {
-            if (cleanup_)
+            if (env.cleanup_)
             {
-                CloseThreadpoolCleanupGroupMembers(cleanup_, FALSE, nullptr);
-                CloseThreadpoolCleanupGroup(cleanup_);
+                CloseThreadpoolCleanupGroupMembers(env.cleanup_, FALSE, nullptr);
+                CloseThreadpoolCleanupGroup(env.cleanup_);
             }
-            if (pool_)
+            if (env.pool_)
             {
-                CloseThreadpool(pool_);
+                CloseThreadpool(env.pool_);
             }
-            DestroyThreadpoolEnvironment(&env_);
+            DestroyThreadpoolEnvironment(&env.env_);
         }
 
         public:
@@ -58,13 +58,13 @@ namespace threadpool_winrt
 
         } catch (...)
         {
-            destroy();
+            destroy(*this);
             throw;
         }
 
         ~environment() noexcept
         {
-            destroy();
+            destroy(*this);
         }
 
         PTP_CALLBACK_ENVIRON get() noexcept
