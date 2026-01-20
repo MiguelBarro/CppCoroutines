@@ -8,10 +8,13 @@
 #include <utility>
 #include <vector>
 
-#include "winrt/Windows.Foundation.h"
-#include "winrt/Windows.Networking.Sockets.h"
-#include "winrt/Windows.Storage.Streams.h"
-#include "winrt/Windows.Foundation.Collections.h"
+
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Networking.Sockets.h>
+#include <winrt/Windows.Storage.Streams.h>
+#include <winrt/Windows.Foundation.Collections.h>
+
+#include "threadpool_winrt.h"
 
 class stats
 {
@@ -39,7 +42,8 @@ public:
 };
 
 winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Foundation::Collections::IVector<uint32_t>>
-session(winrt::Windows::Networking::EndpointPair const& endpointPair,
+session(threadpool_winrt::environment&,
+        winrt::Windows::Networking::EndpointPair const& endpointPair,
         const uint32_t block_size,
         const std::atomic_bool& stop)
 {
@@ -107,7 +111,8 @@ session(winrt::Windows::Networking::EndpointPair const& endpointPair,
 }
 
 winrt::Windows::Foundation::IAsyncAction
-client(winrt::Windows::Networking::EndpointPair const& endpoints,
+client(threadpool_winrt::environment& env,
+       winrt::Windows::Networking::EndpointPair const& endpoints,
        const uint32_t block_size,
        const size_t session_count,
        const std::chrono::seconds timeout)
@@ -120,7 +125,7 @@ client(winrt::Windows::Networking::EndpointPair const& endpoints,
     atomic_bool stop(false);
     list<Windows::Foundation::IAsyncOperation<winrt::Windows::Foundation::Collections::IVector<uint32_t>>> sessions;
     for (size_t i = 0; i < session_count; ++i)
-        sessions.push_back(session(endpoints, block_size, stop));
+        sessions.push_back(session(env, endpoints, block_size, stop));
 
     // Wait the specified timeout
     co_await timeout;
@@ -150,17 +155,21 @@ int wmain(int argc, wchar_t* argv[])
     {
         init_apartment(apartment_type::multi_threaded);
 
-        if (argc != 6)
+        if (argc != 7)
         {
-            wcerr << L"Usage: winrt_client <host> <port> <blocksize> "
+            wcerr << L"Usage: winrt_client <host> <port> <threads> <blocksize> "
                 << L"<sessions> <time>" << endl;
             return 1;
         }
 
         // Parse arguments
-        uint32_t block_size = stoi(argv[3]);
-        size_t session_count = stoi(argv[4]);
-        auto timeout = std::chrono::seconds(stoi(argv[5]));
+        uint32_t thread_count = stoi(argv[3]);
+        uint32_t block_size = stoi(argv[4]);
+        size_t session_count = stoi(argv[5]);
+        auto timeout = std::chrono::seconds(stoi(argv[6]));
+
+        // Create threadpool
+        threadpool_winrt::environment env(thread_count);
 
         // Create the endpoint pair
         Windows::Networking::EndpointPair endpoints(
@@ -171,7 +180,7 @@ int wmain(int argc, wchar_t* argv[])
         );
 
         // Wait for the client to complete
-        client(endpoints, block_size, session_count, timeout).get();
+        client(env, endpoints, block_size, session_count, timeout).get();
 
     }
     catch (winrt::hresult_error e)
