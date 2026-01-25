@@ -98,15 +98,11 @@ session(winrt::Windows::Networking::EndpointPair const& endpointPair,
     // Close the socket
     socket.Close();
 
-    std::vector<uint32_t> measures;
-    measures.push_back(bytes_written);
-    measures.push_back(bytes_read);
-
     // Wrap as a WinRT IVector
-    co_return single_threaded_vector<uint32_t>(std::move(measures));
+    co_return single_threaded_vector<uint32_t>(std::vector<uint32_t>{bytes_written, bytes_read});
 }
 
-winrt::Windows::Foundation::IAsyncAction
+winrt::Windows::Foundation::IAsyncActionWithProgress<short>
 client(winrt::Windows::Networking::EndpointPair const& endpoints,
        const uint32_t block_size,
        const size_t session_count,
@@ -123,7 +119,23 @@ client(winrt::Windows::Networking::EndpointPair const& endpoints,
         sessions.push_back(session(endpoints, block_size, stop));
 
     // Wait the specified timeout
-    co_await timeout;
+    auto progress = co_await get_progress_token();
+    auto end = chrono::system_clock::now() + timeout;
+
+    while(true)
+    {
+        // suspend for 1 second
+        co_await chrono::seconds(1);
+
+        // check remaining time
+        auto current = chrono::system_clock::now();
+        auto remaining = chrono::duration_cast<chrono::seconds>(end - current).count();
+        if (remaining <= 0)
+            break;
+
+        // feedback as progress the time remaining
+        progress(static_cast<short>(remaining));
+    }
 
     // Stop the sessions
     stop = true;
@@ -170,9 +182,17 @@ int wmain(int argc, wchar_t* argv[])
             argv[2]                                 // remoteServiceName
         );
 
-        // Wait for the client to complete
-        client(endpoints, block_size, session_count, timeout).get();
+        // Start the client
+        auto async = client(endpoints, block_size, session_count, timeout);
 
+        // Progress feedbak
+        async.Progress([](const auto& /*asyncInfo*/, short remaining)
+        {
+            wcout << remaining << L" seconds remaining" << endl;
+        });
+
+        // Wait for the client to complete
+        async.get();
     }
     catch (winrt::hresult_error e)
     {

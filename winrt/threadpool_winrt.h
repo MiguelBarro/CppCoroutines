@@ -134,12 +134,12 @@ namespace threadpool_winrt
     };
 
     // inherit from the framework's promise type
-    template <typename Derived, typename Async>
-    struct pool_promise : winrt::impl::promise_base<Derived, Async>
+    template <typename Derived, typename Async, typename TProgress = void>
+    struct pool_promise : winrt::impl::promise_base<Derived, Async, TProgress>
     {
         threadpool_winrt::environment& tp_env;
 
-        using promise_base = winrt::impl::promise_base<Derived, Async>;
+        using promise_base = winrt::impl::promise_base<Derived, Async, TProgress>;
 
         template <typename... Args>
         pool_promise(threadpool_winrt::environment& env, Args&&...)
@@ -218,6 +218,112 @@ namespace std
 
             TResult m_result{ winrt::impl::empty_value<TResult>() };
          };
+    };
+
+    template <typename TProgress, typename... Args>
+    struct coroutine_traits<winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>, threadpool_winrt::environment&, Args...>
+    {
+        struct promise_type final
+            : threadpool_winrt::pool_promise<promise_type,
+                winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>,
+                TProgress>
+        {
+            using base_type = threadpool_winrt::pool_promise<promise_type,
+                    winrt::Windows::Foundation::IAsyncActionWithProgress<TProgress>,
+                    TProgress>;
+            using base_type::base_type;
+
+            using ProgressHandler = winrt::Windows::Foundation::AsyncActionProgressHandler<TProgress>;
+
+            void Progress(ProgressHandler const& handler) noexcept
+            {
+                winrt::slim_lock_guard const guard(this->m_lock);
+                m_progress = winrt::impl::make_agile_delegate(handler);
+            }
+
+            ProgressHandler Progress() noexcept
+            {
+                winrt::slim_lock_guard const guard(this->m_lock);
+                return m_progress;
+            }
+
+            void return_void() const noexcept
+            {
+            }
+
+            void set_progress(TProgress const& result)
+            {
+                if (auto handler = Progress())
+                {
+                    winrt::impl::invoke(handler, *this, result);
+                }
+            }
+
+            ProgressHandler m_progress;
+        };
+    };
+
+    template <typename TResult, typename TProgress, typename... Args>
+    struct coroutine_traits<winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>,
+            threadpool_winrt::environment&, Args...>
+    {
+        struct promise_type final
+            : threadpool_winrt::pool_promise<promise_type,
+                winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>,
+                TProgress>
+        {
+            using base_type = threadpool_winrt::pool_promise<promise_type,
+                    winrt::Windows::Foundation::IAsyncOperationWithProgress<TResult, TProgress>,
+                    TProgress>;
+            using base_type::base_type;
+
+            using ProgressHandler = winrt::Windows::Foundation::AsyncOperationProgressHandler<TResult, TProgress>;
+
+            void Progress(ProgressHandler const& handler) noexcept
+            {
+                winrt::slim_lock_guard const guard(this->m_lock);
+                m_progress = winrt::impl::make_agile_delegate(handler);
+            }
+
+            ProgressHandler Progress() noexcept
+            {
+                winrt::slim_lock_guard const guard(this->m_lock);
+                return m_progress;
+            }
+
+            TResult get_return_value() noexcept
+            {
+                return std::move(m_result);
+            }
+
+            TResult copy_return_value() noexcept
+            {
+                return m_result;
+            }
+
+            void return_value(TResult&& value) noexcept
+            {
+                winrt::slim_lock_guard const guard(this->m_lock);
+                m_result = std::move(value);
+            }
+
+            void return_value(TResult const& value) noexcept
+            {
+                winrt::slim_lock_guard const guard(this->m_lock);
+                m_result = value;
+            }
+
+            void set_progress(TProgress const& result)
+            {
+                if (auto handler = Progress())
+                {
+                    winrt::impl::invoke(handler, *this, result);
+                }
+            }
+
+            TResult m_result{ winrt::impl::empty_value<TResult>() };
+            ProgressHandler m_progress;
+        };
     };
 
 } // namespace std
