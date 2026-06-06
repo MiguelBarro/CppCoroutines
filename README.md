@@ -64,3 +64,16 @@ Talks:
 1. [Gor Nishanov “Nano-coroutines to the Rescue! (Using Coroutines TS, of Course)”](https://youtu.be/j9tlJAqMV7U)
 1. [Andreas Weis "Deciphering C++ Coroutines Part 1 - Andreas Weis"](https://youtu.be/J7fYddslH0Q) 
 1. [Andreas Weis "Deciphering C++ Coroutines Part 2 - Andreas Weis"](https://youtu.be/qfKFfQSxvA8) 
+
+## Pitfalls
+
+Integrating coroutines while maintaining backwards compatibility with C++11/14/17 code required trade-offs.
++ `Lambda` expressions can be coroutines, but their *closures* cannot be trusted.
+
+  `Lambda` arguments will be allocated on coroutine's *heap memory*, whereas the *closure* ones will remain on the
+  *stack*, as usual, and will not be available after resumptions.
+
+  Here are several articles describing the issue:
+    - [C++ Core Guidelines CP.51](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rcoro-capture)
+    - [Raymond Chen. How do I get the effect of C#’s async void in a C++ coroutine?](https://devblogs.microsoft.com/oldnewthing/20190116-00/?p=100715)
+    - [Raymond Chen. A capturing lambda can be a coroutine, but you have to save your captures while you still can](https://devblogs.microsoft.com/oldnewthing/20211103-00/?p=105870)
