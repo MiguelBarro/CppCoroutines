@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: deploy sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: examples
 
@@ -39,7 +39,7 @@ jobs:
                    --target install
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: WindowsVC
           path: ./examples/install/
@@ -49,7 +49,7 @@ jobs:
 
     steps:
       - name: deploy sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: examples
 
@@ -81,7 +81,7 @@ jobs:
 
       - name: Upload error info artifact on compiler failure
         if: ${{ steps.build.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: WindowsClangErrorReports
           path: |
@@ -89,14 +89,14 @@ jobs:
 
       - name: 
         if: ${{ steps.build.outcome == 'failure' }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@v9
         with:
           script: |
                   core.setFailed('Build failed and error reports uploaded')
 
       - name: Upload Artifact
         if: ${{ steps.build.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: WindowsClang
           path: ./examples/install/
@@ -106,7 +106,7 @@ jobs:
 
     steps:
       - name: deploy sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: examples
 
@@ -121,7 +121,7 @@ jobs:
              cmake --build ./build -j --target install
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: UbuntuGCC
           path: ./examples/install/
@@ -131,7 +131,7 @@ jobs:
 
     steps:
       - name: deploy sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: examples
 
@@ -148,7 +148,7 @@ jobs:
              cmake --build ./build -j --target install
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: UbuntuClang
           path: ./examples/install/
@@ -158,7 +158,7 @@ jobs:
 
     steps:
       - name: deploy sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: examples
 
@@ -173,7 +173,7 @@ jobs:
              cmake --build ./build -j --target install
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MacOSClang
           path: ./examples/install/
