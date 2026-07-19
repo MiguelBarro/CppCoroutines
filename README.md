@@ -1,5 +1,7 @@
 # C++ Coroutine Examples
 
+> 🕯️ In loving memory of Gor Nishanov [1971-2026](https://herbsutter.com/2026/06/28/gor-nishanov-1971-2026/) 🕯️ 
+
 This is a collection of C++ coroutine examples mostly based on the following CppCon talks:
 1. [James McNellis "Introduction to C++ Coroutines"](https://youtu.be/ZTqHjjm86Bw)
 1. [Gor Nishanov "Naked coroutines live (with networking)"](https://youtu.be/UL3TtTgt3oU)
