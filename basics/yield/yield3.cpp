@@ -1,10 +1,17 @@
 // https://github.com/ChuanqiXu9/stdmodules/blob/0d5589cac865d92ae0858600e798b8a537703461/examples/Generator/Generator.cpp#L75
 // > cl /EHsc /std:c++20 /Zi .\yield3.cpp
 
-#include <coroutine>
-#include <cstddef>
-#include <iostream>
-#include <numeric>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.cstddef;
+    import std_proxy.iostream;
+    import std_proxy.numeric;
+#else
+#   include <coroutine>
+#   include <cstddef>
+#   include <iostream>
+#   include <numeric>
+#endif
 
 using namespace std;
 

@@ -8,12 +8,21 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <algorithm>
-#include <functional>
-#include <iostream>
-#include <list>
-#include <memory>
-#include <thread>
+#ifdef USE_CXX_MODULE
+    import std_proxy.algorithm;
+    import std_proxy.functional;
+    import std_proxy.iostream;
+    import std_proxy.list;
+    import std_proxy.memory;
+    import std_proxy.thread;
+#else
+#   include <algorithm>
+#   include <functional>
+#   include <iostream>
+#   include <list>
+#   include <memory>
+#   include <thread>
+#endif
 
 #include <asio.hpp>
 

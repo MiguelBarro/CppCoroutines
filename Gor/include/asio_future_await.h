@@ -1,8 +1,13 @@
 #ifndef ASIO_FUTURE_AWAIT
 #define ASIO_FUTURE_AWAIT
 
-#include <coroutine>
-#include <memory>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.memory;
+#else
+#   include <coroutine>
+#   include <memory>
+#endif
 
 #include <asio/system_timer.hpp>
 #include <asio/use_future.hpp>

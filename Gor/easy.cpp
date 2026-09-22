@@ -1,12 +1,21 @@
 // cl /Zi /EHsc /nologo /std:c++20 /D _WIN32_WINNT=_WIN32_WINNT_WIN10 /D ASIO_STANDALONE /I $Env:TMP/build/asio.1.10.8/build/native/include/ easy.cpp
 // set makeprg=cl\ /Zi\ /EHsc\ /nologo\ /std:c++20\ /D\ _WIN32_WINNT=_WIN32_WINNT_WIN10\ /D\ ASIO_STANDALONE\ /I\ $TMP/build/asio.1.10.8/build/native/include/\ (gi\ %)
 
-#include <coroutine>
-#include <cstdlib>
-#include <functional>
-#include <future>
-#include <iostream>
-#include <vector>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.cstdlib;
+    import std_proxy.functional;
+    import std_proxy.future;
+    import std_proxy.iostream;
+    import std_proxy.vector;
+#else
+#   include <coroutine>
+#   include <cstdlib>
+#   include <functional>
+#   include <future>
+#   include <iostream>
+#   include <vector>
+#endif
 
 #include <asio.hpp>
 #include <asio/system_timer.hpp>

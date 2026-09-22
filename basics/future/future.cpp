@@ -1,12 +1,22 @@
 // > cl /EHsc /std:c++20 future.cpp
 
-#include <chrono>
-#include <coroutine>
-#include <exception>
-#include <future>
-#include <iostream>
-#include <thread>
-#include <type_traits>
+#ifdef USE_CXX_MODULE
+    import std_proxy.chrono;
+    import std_proxy.coroutine;
+    import std_proxy.exception;
+    import std_proxy.future;
+    import std_proxy.iostream;
+    import std_proxy.thread;
+    import std_proxy.type_traits;
+#else
+#   include <chrono>
+#   include <coroutine>
+#   include <exception>
+#   include <future>
+#   include <iostream>
+#   include <thread>
+#   include <type_traits>
+#endif
 
 // A program-defined type on which the coroutine_traits specializations below depend
 struct as_coroutine {};

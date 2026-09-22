@@ -54,6 +54,7 @@ endif()
 # Create common setup for the executables
 add_library(gor_common_setup INTERFACE)
 target_compile_features(gor_common_setup INTERFACE cxx_std_20)
+target_link_libraries(gor_common_setup INTERFACE common_stl_module)
 
 # compiler specific options
 if(MSVC)

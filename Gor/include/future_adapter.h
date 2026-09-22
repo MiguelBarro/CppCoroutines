@@ -1,8 +1,13 @@
 #ifndef FUTURE_ADAPTER
 #define FUTURE_ADAPTER
 
-#include <coroutine>
-#include <future>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.future;
+#else
+#   include <coroutine>
+#   include <future>
+#endif
 
 template <typename... Args>
 struct std::coroutine_traits<std::future<void>, Args...>

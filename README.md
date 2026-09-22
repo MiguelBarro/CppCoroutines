@@ -28,6 +28,9 @@ in Microsoft roadmap.
 `dotnet cli` is used as a workaround to install nuget packages when `nuget` is missing, since it is available in all
 Github runners.
 
+Support for C++ modules can be enabled by setting the `USE_CXX_MODULES` CMake variable to `ON`. The STL BMI interface
+will be shared between all binaries speeding up the build time.
+
 ## Index
 
 1. [McNellis examples](./basics/README.md)

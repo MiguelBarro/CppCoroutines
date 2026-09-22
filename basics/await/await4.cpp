@@ -1,8 +1,13 @@
 // https://devblogs.microsoft.com/oldnewthing/20191209-00/?p=103195
 // cl /EHsc /std:c++20 /Zi await4.cpp
 
-#include <coroutine>
-#include <iostream>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.iostream;
+#else
+#   include <coroutine>
+#   include <iostream>
+#endif
 
 using namespace std;
 
@@ -124,7 +129,7 @@ resumable_thing get_value()
 {
     cout << "get_value: called" << endl;
     // int res = co_await resumable_thing::awaiter{};
-    int res = co_await std::suspend_always{};
+    co_await std::suspend_always{};
     cout << "get_value: resumed" << endl;
 }
 

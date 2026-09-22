@@ -1,7 +1,12 @@
 // > cl /EHsc /std:c++20 /Zi yield1.cpp
 
-#include <coroutine>
-#include <iostream>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.iostream;
+#else
+#   include <coroutine>
+#   include <iostream>
+#endif
 
 class generator
 {

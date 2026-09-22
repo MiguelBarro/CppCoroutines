@@ -1,7 +1,11 @@
 #ifndef HANDLER_ALLOCATOR
 #define HANDLER_ALLOCATOR
 
-#include <array>
+#ifdef USE_CXX_MODULE
+    import std_proxy.array;
+#else
+#   include <array>
+#endif
 
 // Class to manage the memory to be used for handler-based custom allocation.
 // It contains a single block of memory which may be returned for allocation

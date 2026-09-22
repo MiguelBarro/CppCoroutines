@@ -1,6 +1,12 @@
-#include <coroutine>
-#include <future>
-#include <iostream>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.future;
+    import std_proxy.iostream;
+#else
+#   include <coroutine>
+#   include <future>
+#   include <iostream>
+#endif
 
 using namespace std;
 
