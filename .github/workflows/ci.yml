@@ -125,7 +125,8 @@ jobs:
         with:
           name: WindowsClangErrorReports
           path: |
-                ${{ steps.build.outputs.reports_paths }}
+                ${{ steps.build_headers.outputs.reports_paths }}
+                ${{ steps.build_modules.outputs.reports_paths }}
 
       - name: Report failure
         if: ${{ steps.build_headers.outcome == 'failure' || steps.build_modules.outcome == 'failure' }}
@@ -150,37 +151,34 @@ jobs:
         with:
           path: examples
 
-      - name: use a gcc version C++20 module-able
+      - name: extract builtin program versions
+        id: versions
         run: |
-             (g++ --version)[0] -match "^g\+\+.* (?<version>[\d\.]+)$"
-             if ([version]$matches.version -lt [version]"15.0")
-             {
-                sudo apt update
-                sudo apt install -y software-properties-common
+             $ver = @()
 
-                sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-                sudo apt update
+             # g++
+             (g++ --version)[0] -match "^g\+\+.* (?<version>[\d\.]+)$" *>$null
+             $ver += "gcc_version=$($matches.version)"
 
-                sudo apt install -y gcc-15 g++-15 libc++-15-dev libc++abi-15-dev
+             # cmake
+             (cmake --version)[0] -match "cmake version (?<version>[\d\.]+)" *>$null
+             $ver += "cmake_version=$($matches.version)"
 
-                # Update the environment
-                "CXX=g++-15" | Out-File $Env:GITHUB_ENV -Append -Encoding OEM
-             }
+             Add-Content -Path $Env:GITHUB_OUTPUT -Value $ver -Encoding OEM
+
+      - name: use a gcc version C++20 module-able
+        if: ${{ steps.versions.outputs.gcc_version < '15' }}
+        uses: egor-tensin/setup-gcc@v2
+        with:
+          version: 15
+          platform: x64
+          cc: 1
 
       - name: use a cmake version able to build the std module
-        run: |
-             (cmake --version)[0] -match "cmake version (?<version>[\d\.]+)"
-             if ([version]$matches.version -lt [version]"4.1")
-             {  # older cmake cannot generate the `import std` target for gcc
-                $ver = "4.4.3"
-                curl -sSLo "$Env:RUNNER_TEMP/cmake.tar.gz" `
-                    "https://github.com/Kitware/CMake/releases/download/v$ver/cmake-$ver-linux-x86_64.tar.gz"
-                tar -xzf "$Env:RUNNER_TEMP/cmake.tar.gz" -C $Env:HOME
-
-                # Update the environment
-                "$Env:HOME/cmake-$ver-linux-x86_64/bin" | Out-File $Env:GITHUB_PATH -Append -Encoding OEM
-                & "$Env:HOME/cmake-$ver-linux-x86_64/bin/cmake" --version
-             }
+        if: ${{ steps.versions.outputs.cmake_version < '4.4.3' }}
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '4.4.3'
 
       - name: build/install examples from headers
         run: |
@@ -218,58 +216,46 @@ jobs:
         with:
           path: examples
 
-      - name: use a gcc version C++20 module-able
+      - name: extract builtin program versions
+        id: versions
         run: |
-             # This is necessary because clang relies on gcc STL (libstdc++)
-             (g++ --version)[0] -match "^g\+\+.* (?<version>[\d\.]+)$"
-             if ([version]$matches.version -lt [version]"15.0")
-             {
-                sudo apt update
-                sudo apt install -y software-properties-common
+             $ver = @()
 
-                sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-                sudo apt update
+             # g++
+             (g++ --version)[0] -match "^g\+\+.* (?<version>[\d\.]+)$" *>$null
+             $ver += "gcc_version=$($matches.version)"
 
-                sudo apt install -y gcc-15 g++-15 libc++-15-dev libc++abi-15-dev
+             # clang++
+             (clang++ --version)[0] -match "^Ubuntu clang version (?<version>[\d\.]+) " *>$null
+             $ver += "clang_version=$($matches.version)"
 
-                # Update the environment
-                "CXX=g++-15" | Out-File $Env:GITHUB_ENV -Append -Encoding OEM
-             }
+             # cmake
+             (cmake --version)[0] -match "cmake version (?<version>[\d\.]+)" *>$null
+             $ver += "cmake_version=$($matches.version)"
+
+             Add-Content -Path $Env:GITHUB_OUTPUT -Value $ver -Encoding OEM
+
+      - name: use a gcc version C++20 module-able
+        if: ${{ steps.versions.outputs.gcc_version < '15' }}
+        uses: egor-tensin/setup-gcc@v2
+        with:
+          version: 15
+          platform: x64
+          cc: 0
 
       - name: use a clang version C++20 module-able
-        run: |
-             (clang++ --version)[0] -match "^Ubuntu clang version (?<version>[\d\.]+) "
-             if ([version]$matches.version -lt [version]"20.0")
-             {  # install clang-20
-                sudo apt update
-                sudo apt install -y clang-20 clang-tools-20 libc++-20-dev libc++abi-20-dev
-
-                # Update the environment
-                "CXX=clang++-20" | Out-File $Env:GITHUB_ENV -Append -Encoding OEM
-             }
-             else
-             {  # install libc++
-                sudo apt update
-                sudo apt install -y libc++-dev libc++abi-dev
-
-                # Update the environment
-                "CXX=clang++" | Out-File $Env:GITHUB_ENV -Append -Encoding OEM
-             }
+        if: ${{ steps.versions.outputs.clang_version < '20' }}
+        uses: egor-tensin/setup-clang@v2
+        with:
+          version: 20
+          platform: x64
+          cc: 1
 
       - name: use a cmake version able to build the std module
-        run: |
-             (cmake --version)[0] -match "cmake version (?<version>[\d\.]+)"
-             if ([version]$matches.version -lt [version]"4.1")
-             {  # older cmake cannot generate the `import std` target
-                $ver = "4.4.3"
-                curl -sSLo "$Env:RUNNER_TEMP/cmake.tar.gz" `
-                    "https://github.com/Kitware/CMake/releases/download/v$ver/cmake-$ver-linux-x86_64.tar.gz"
-                tar -xzf "$Env:RUNNER_TEMP/cmake.tar.gz" -C $Env:HOME
-
-                # Update the environment
-                "$Env:HOME/cmake-$ver-linux-x86_64/bin" | Out-File $Env:GITHUB_PATH -Append -Encoding OEM
-                & "$Env:HOME/cmake-$ver-linux-x86_64/bin/cmake" --version
-             }
+        if: ${{ steps.versions.outputs.cmake_version < '4.4.3' }}
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '4.4.3'
 
       - name: build/install examples from headers
         run: |
