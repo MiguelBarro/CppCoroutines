@@ -1,6 +1,12 @@
 // cl /EHsc /std:c++20 /Zi await2.cpp
-#include <coroutine>
-#include <iostream>
+
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.iostream;
+#else
+#   include <coroutine>
+#   include <iostream>
+#endif
 
 using namespace std;
 
@@ -38,6 +44,8 @@ struct resumable_thing
             _coroutine = other._coroutine;
             other._coroutine = nullptr;
         }
+
+        return *this;
     }
 
     void resume()

@@ -1,9 +1,15 @@
 #ifndef AWAIT_ADAPTERS
 #define AWAIT_ADAPTERS
 
-#include <algorithm>
-#include <coroutine>
-#include <optional>
+#ifdef USE_CXX_MODULE
+    import std_proxy.algorithm;
+    import std_proxy.coroutine;
+    import std_proxy.optional;
+#else
+#   include <algorithm>
+#   include <coroutine>
+#   include <optional>
+#endif
 
 #include <asio.hpp>
 

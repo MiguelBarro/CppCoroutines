@@ -1,7 +1,11 @@
 #ifndef CORO_USE_FUTURE
 # define CORO_USE_FUTURE
 
-#include <future>
+#ifdef USE_CXX_MODULE
+    import std_proxy.future;
+#else
+#   include <future>
+#endif
 
 #include <asio/async_result.hpp>
 

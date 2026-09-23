@@ -1,6 +1,12 @@
-#include <coroutine>
-#include <iostream>
-#include <system_error>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.iostream;
+    import std_proxy.system_error;
+#else
+#   include <coroutine>
+#   include <iostream>
+#   include <system_error>
+#endif
 
 #include <asio.hpp>
 #include <asio/system_timer.hpp>

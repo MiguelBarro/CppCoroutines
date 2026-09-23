@@ -14,13 +14,53 @@ project(WinRTExamples
 option(USE_SDK_HEADERS "Use the Windows SDK provided headers instead of the repo ones" OFF)
 
 # Create common setup for the executables
-add_library(winrt_common_setup INTERFACE)
-target_compile_features(winrt_common_setup INTERFACE cxx_std_20)
+if (USE_CXX_MODULES)
 
-if(NOT USE_SDK_HEADERS)
-    target_include_directories(winrt_common_setup INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/projection
+    if(USE_SDK_HEADERS)
+        message(FATAL_ERROR "C++20 modules are not supported with the Windows SDK headers."
+                            "Please disable USE_CXX_MODULES or USE_SDK_HEADERS.")
+    endif()
+
+    include(cppwinrt.cmake)
+
+    add_library(winrt_common_setup STATIC)
+
+    target_compile_features(winrt_common_setup PUBLIC cxx_std_20)
+
+    # project using C++20 modules
+    execute_process(COMMAND ${CPPWINRT_EXECUTABLE}
+        -modules
+        -module_include Windows.Foundation
+        -module_exclude Windows.Foundation.Diagnostics
+        -input local
+        -output ${CMAKE_CURRENT_BINARY_DIR}/projection
     )
+    file(GLOB_RECURSE WINRT_MODULES "${CMAKE_CURRENT_BINARY_DIR}/projection/winrt/*.ixx")
+
+    target_include_directories(winrt_common_setup PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}/projection
+    )
+
+    # Use the generated module interface units
+    target_sources(winrt_common_setup PUBLIC
+        FILE_SET winrt_modules TYPE CXX_MODULES
+        BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/projection/winrt
+        FILES ${WINRT_MODULES}
+    )
+
+    # only use modules with cppwinrt above 3.0 sources
+    target_link_libraries(winrt_common_setup PUBLIC common_stl_module)
+else()
+
+    add_library(winrt_common_setup INTERFACE)
+
+    target_compile_features(winrt_common_setup INTERFACE cxx_std_20)
+
+    if(NOT USE_SDK_HEADERS)
+        target_include_directories(winrt_common_setup INTERFACE
+            ${CMAKE_CURRENT_SOURCE_DIR}/projection
+        )
+    endif()
 endif()
 
 # compiler specific options
@@ -47,8 +87,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # customize binary
-set_target_properties(winrt_common_setup PROPERTIES RELEASE_POSTFIX "-${PROJECT_VERSION}")
-set_target_properties(winrt_common_setup PROPERTIES DEBUG_POSTFIX "-${PROJECT_VERSION}d")
+set_target_properties(winrt_common_setup PROPERTIES
+    RELEASE_POSTFIX "-${PROJECT_VERSION}"
+    DEBUG_POSTFIX "-${PROJECT_VERSION}d"
+)
 
 # simple asio modified performance tests
 # the number of background threads is managed by the process default threadpool

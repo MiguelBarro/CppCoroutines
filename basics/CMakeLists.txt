@@ -5,9 +5,9 @@ project(BasicExamples
     DESCRIPTION "Basic coroutine examples"
     LANGUAGES CXX)
 
-# Create common setup for the executables
 add_library(basics_common_setup INTERFACE)
 target_compile_features(basics_common_setup INTERFACE cxx_std_20)
+target_link_libraries(basics_common_setup INTERFACE common_stl_module)
 
 # disable some warnings
 if(MSVC)
@@ -18,6 +18,10 @@ if(MSVC)
             -Wno-unused-lambda-capture
         )
     endif()
+    target_compile_definitions(basics_common_setup INTERFACE
+        _WIN32_WINNT=0x0A00
+        _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
+    )
 else()
     target_compile_options(basics_common_setup INTERFACE
         -Wall -Wextra -pedantic -Werror
@@ -25,28 +29,23 @@ else()
     )
 endif()
 
-if(MSVC)
-    target_compile_definitions(basics_common_setup INTERFACE
-        _WIN32_WINNT=0x0A00
-        _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
-    )
-endif()
-
-# cunstomize binary
-set_target_properties(basics_common_setup PROPERTIES RELEASE_POSTFIX "-${PROJECT_VERSION}")
-set_target_properties(basics_common_setup PROPERTIES DEBUG_POSTFIX "-${PROJECT_VERSION}d")
+# customize binary
+set_target_properties(basics_common_setup PROPERTIES
+    RELEASE_POSTFIX "-${PROJECT_VERSION}"
+    DEBUG_POSTFIX "-${PROJECT_VERSION}d"
+)
 
 # Create examples executable target
 add_executable(await1 await/await1.cpp)
 target_link_libraries(await1 PRIVATE basics_common_setup)
 
-add_executable(await2 await/await1.cpp)
+add_executable(await2 await/await2.cpp)
 target_link_libraries(await2 PRIVATE basics_common_setup)
 
-add_executable(await3 await/await1.cpp)
+add_executable(await3 await/await3.cpp)
 target_link_libraries(await3 PRIVATE basics_common_setup)
 
-add_executable(await4 await/await1.cpp)
+add_executable(await4 await/await4.cpp)
 target_link_libraries(await4 PRIVATE basics_common_setup)
 
 add_executable(future future/future.cpp)

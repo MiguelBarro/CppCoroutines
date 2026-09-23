@@ -8,16 +8,29 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <algorithm>
-#include <atomic>
-#include <chrono>
-#include <functional>
-#include <iostream>
-#include <list>
-#include <memory>
-#include <string>
-#include <thread>
-#include <utility>
+#ifdef USE_CXX_MODULE
+    import std_proxy.algorithm;
+    import std_proxy.atomic;
+    import std_proxy.chrono;
+    import std_proxy.functional;
+    import std_proxy.iostream;
+    import std_proxy.list;
+    import std_proxy.memory;
+    import std_proxy.string;
+    import std_proxy.thread;
+    import std_proxy.utility;
+#else
+#   include <algorithm>
+#   include <atomic>
+#   include <chrono>
+#   include <functional>
+#   include <iostream>
+#   include <list>
+#   include <memory>
+#   include <string>
+#   include <thread>
+#   include <utility>
+#endif
 
 #include <asio.hpp>
 #include <asio/system_timer.hpp>

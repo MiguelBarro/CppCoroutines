@@ -1,8 +1,14 @@
 // cl /EHsc /std:c++20 /Zi await1.cpp
 
-#include <coroutine>
-#include <iostream>
-#include <version>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.iostream;
+    import std_proxy.version;
+#else
+#   include <coroutine>
+#   include <iostream>
+#   include <version>
+#endif
 
 using namespace std;
 

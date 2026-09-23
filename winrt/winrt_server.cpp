@@ -1,16 +1,29 @@
 // cl /Zi /EHsc /nologo /std:c++20 winrt_simple_server.cpp /link windowsapp.lib
 // set makeprg=cl\ /Zi\ /EHsc\ /nologo\ /std:c++20\ %\ /link\ windowsapp.lib
 
-#include <csignal>
-#include <cstdint>
-#include <cstdlib>
-#include <format>
-#include <iostream>
-#include <list>
+#ifdef USE_CXX_MODULE
+    import std_proxy.csignal;
+    import std_proxy.cstdint;
+    import std_proxy.cstdlib;
+    import std_proxy.format;
+    import std_proxy.iostream;
+    import std_proxy.list;
 
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Networking.Sockets.h>
-#include <winrt/Windows.Storage.Streams.h>
+    import winrt.Windows.Foundation;
+    import winrt.Windows.Networking.Sockets;
+    import winrt.Windows.Storage.Streams;
+#else
+#   include <csignal>
+#   include <cstdint>
+#   include <cstdlib>
+#   include <format>
+#   include <iostream>
+#   include <list>
+
+#   include <winrt/Windows.Foundation.h>
+#   include <winrt/Windows.Networking.Sockets.h>
+#   include <winrt/Windows.Storage.Streams.h>
+#endif
 
 #include "threadpool_winrt.h"
 

@@ -1,7 +1,12 @@
 // cl /EHsc /std:c++20 /Zi yield2.cpp
-#include <coroutine>
-#include <cstddef>
-#include <iostream>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.iostream;
+#else
+#   include <coroutine>
+#   include <cstddef>
+#   include <iostream>
+#endif
 
 using namespace std;
 
