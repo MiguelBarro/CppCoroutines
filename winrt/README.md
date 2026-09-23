@@ -103,3 +103,14 @@ As a workaround, instead of restricting the projection, it is possible to trim i
 The [projection.ps1](./projection.ps1) relies on the Visual Studio compiler capability to generate dependency trees
 [/sourceDependencies](https://learn.microsoft.com/en-us/cpp/build/reference/sourcedependencies?view=msvc-170).
 Only the headers actually required by the examples are preserved.
+
+## C++/WinRT modules
+
+The C++/WinRT projection can be generated including C++20 modules. This improves performance dramatically, taking
+into account, the large number of headers included in the projection.
+By setting the CMake option `USE_CXX_MODULES` to `ON`, both `STL` and `C++/WinRT` projections are generated as modules
+and the sources will favour them over the headers.
+
+This option is incompatible with the `USE_SDK_HEADERS` option, which must be set to `OFF`. The reason is that the
+SDK headers are not yet module aware, and the projection must be generated using the *nuget package*
+`Microsoft.Windows.CppWinRT` version `3.0.260818.1`.

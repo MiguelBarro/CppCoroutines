@@ -2,12 +2,19 @@
 #ifndef THREADPOOL_WINRT_H
 #define THREADPOOL_WINRT_H
 
-#include <coroutine>
-#include <cstdint>
-
 #include <windows.h>
 
-#include <winrt/Windows.Foundation.h>
+#ifdef USE_CXX_MODULE
+    import std_proxy.coroutine;
+    import std_proxy.cstdint;
+
+    import winrt.Windows.Foundation;
+#else
+#   include <coroutine>
+#   include <cstdint>
+
+#   include <winrt/Windows.Foundation.h>
+#endif
 
 namespace threadpool_winrt
 {
