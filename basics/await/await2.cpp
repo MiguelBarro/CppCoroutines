@@ -44,6 +44,8 @@ struct resumable_thing
             _coroutine = other._coroutine;
             other._coroutine = nullptr;
         }
+
+        return *this;
     }
 
     void resume()

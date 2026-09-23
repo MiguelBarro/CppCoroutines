@@ -27,14 +27,26 @@ jobs:
         with:
           path: examples
 
-      - name: build/install examples
+      - name: build/install examples from headers
         run: |
              cd examples
-             mkdir build
-             mkdir install
-             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
-                   -B ./build -A x64 -T host=x64 .
-             cmake --build ./build -j `
+             mkdir -p build/headers
+             mkdir -p install/headers
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/headers" `
+                   -B ./build/headers -A x64 -T host=x64 .
+             cmake --build ./build/headers -j `
+                   --config RelWithDebInfo `
+                   --target install
+
+      - name: build/install examples from modules
+        run: |
+             cd examples
+             mkdir -p build/modules
+             mkdir -p install/modules
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/modules" `
+                   -DUSE_CXX_MODULES=ON `
+                   -B ./build/modules -A x64 -T host=x64 .
+             cmake --build ./build/modules -j `
                    --config RelWithDebInfo `
                    --target install
 
@@ -53,17 +65,45 @@ jobs:
         with:
           path: examples
 
-      - name: build/install examples
-        id: build
+      - name: build/install examples from headers
+        id: build_headers
         continue-on-error: true
         run: |
              $ErrorActionPreference = 'Continue'
              cd examples
-             mkdir build
-             mkdir install
-             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
-                   -B ./build -A x64 -T ClangCL .
-             cmake --build ./build -j `
+             mkdir -p build/headers
+             mkdir -p install/headers
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/headers" `
+                   -B ./build/headers -A x64 -T ClangCL .
+             cmake --build ./build/headers -j `
+                   --config RelWithDebInfo `
+                   --target install | Tee-Object -Variable cmake_log
+
+             if($LASTEXITCODE)
+             {
+               $pattern = 'clang-cl : message : diagnostic msg: (.*) \['
+               $paths = ($cmake_log | sls -AllMatches -Pattern $pattern).Matches.Groups |
+                   ? { $_.GetType().Name -eq 'Group' } | select -ExpandProperty Value 
+               $paths = $paths -join "`r"
+               "reports_paths=$paths" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append -Encoding OEM
+
+               Get-Content $Env:GITHUB_OUTPUT
+               exit 1
+             }
+
+      - name: build/install examples from modules
+        id: build_modules
+        if: false # cl-clang cannot yet handle cl C++20 module options
+        continue-on-error: true
+        run: |
+             $ErrorActionPreference = 'Continue'
+             cd examples
+             mkdir -p build/modules
+             mkdir -p install/modules
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/modules" `
+                   -DUSE_CXX_MODULES=ON `
+                   -B ./build/modules -A x64 -T ClangCL .
+             cmake --build ./build/modules -j `
                    --config RelWithDebInfo `
                    --target install | Tee-Object -Variable cmake_log
 
@@ -80,22 +120,22 @@ jobs:
              }
 
       - name: Upload error info artifact on compiler failure
-        if: ${{ steps.build.outcome == 'failure' }}
+        if: ${{ steps.build_headers.outcome == 'failure' || steps.build_modules.outcome == 'failure' }}
         uses: actions/upload-artifact@v7
         with:
           name: WindowsClangErrorReports
           path: |
                 ${{ steps.build.outputs.reports_paths }}
 
-      - name: 
-        if: ${{ steps.build.outcome == 'failure' }}
+      - name: Report failure
+        if: ${{ steps.build_headers.outcome == 'failure' || steps.build_modules.outcome == 'failure' }}
         uses: actions/github-script@v9
         with:
           script: |
                   core.setFailed('Build failed and error reports uploaded')
 
       - name: Upload Artifact
-        if: ${{ steps.build.outcome == 'success' }}
+        if: ${{ steps.build_headers.outcome == 'success' || steps.build_modules.outcome == 'success' }}
         uses: actions/upload-artifact@v7
         with:
           name: WindowsClang
@@ -110,15 +150,58 @@ jobs:
         with:
           path: examples
 
-      - name: build/install examples
+      - name: use a gcc version C++20 module-able
+        run: |
+             (g++ --version)[0] -match "^g\+\+.* (?<version>[\d\.]+)$"
+             if ([version]$matches.version -lt [version]"15.0")
+             {
+                sudo apt update
+                sudo apt install -y software-properties-common
+
+                sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+                sudo apt update
+
+                sudo apt install -y gcc-15 g++-15 libc++-15-dev libc++abi-15-dev
+
+                # Update the environment
+                "CXX=g++-15" | Out-File $Env:GITHUB_ENV -Append -Encoding OEM
+             }
+
+      - name: use a cmake version able to build the std module
+        run: |
+             (cmake --version)[0] -match "cmake version (?<version>[\d\.]+)"
+             if ([version]$matches.version -lt [version]"4.1")
+             {  # older cmake cannot generate the `import std` target for gcc
+                $ver = "4.4.3"
+                curl -sSLo "$Env:RUNNER_TEMP/cmake.tar.gz" `
+                    "https://github.com/Kitware/CMake/releases/download/v$ver/cmake-$ver-linux-x86_64.tar.gz"
+                tar -xzf "$Env:RUNNER_TEMP/cmake.tar.gz" -C $Env:HOME
+
+                # Update the environment
+                "$Env:HOME/cmake-$ver-linux-x86_64/bin" | Out-File $Env:GITHUB_PATH -Append -Encoding OEM
+                & "$Env:HOME/cmake-$ver-linux-x86_64/bin/cmake" --version
+             }
+
+      - name: build/install examples from headers
         run: |
              cd examples
-             mkdir build
-             mkdir install
-             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
+             mkdir -p build/headers
+             mkdir -p install/headers
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/headers" `
                    -DCMAKE_BUILD_TYPE=RelWithDebInfo `
-                   -B ./build .
-             cmake --build ./build -j --target install
+                   -B ./build/headers .
+             cmake --build ./build/headers -j --target install
+
+      - name: build/install examples from modules
+        run: |
+             cd examples
+             mkdir -p build/modules
+             mkdir -p install/modules
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/modules" `
+                   -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+                   -DUSE_CXX_MODULES=ON `
+                   -B ./build/modules -G Ninja .
+             cmake --build ./build/modules -j --target install
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
@@ -135,17 +218,79 @@ jobs:
         with:
           path: examples
 
-      - name: build/install examples
-        env:
-          CXX: clang++
+      - name: use a gcc version C++20 module-able
+        run: |
+             # This is necessary because clang relies on gcc STL (libstdc++)
+             (g++ --version)[0] -match "^g\+\+.* (?<version>[\d\.]+)$"
+             if ([version]$matches.version -lt [version]"15.0")
+             {
+                sudo apt update
+                sudo apt install -y software-properties-common
+
+                sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+                sudo apt update
+
+                sudo apt install -y gcc-15 g++-15 libc++-15-dev libc++abi-15-dev
+
+                # Update the environment
+                "CXX=g++-15" | Out-File $Env:GITHUB_ENV -Append -Encoding OEM
+             }
+
+      - name: use a clang version C++20 module-able
+        run: |
+             (clang++ --version)[0] -match "^Ubuntu clang version (?<version>[\d\.]+) "
+             if ([version]$matches.version -lt [version]"20.0")
+             {  # install clang-20
+                sudo apt update
+                sudo apt install -y clang-20 clang-tools-20 libc++-20-dev libc++abi-20-dev
+
+                # Update the environment
+                "CXX=clang++-20" | Out-File $Env:GITHUB_ENV -Append -Encoding OEM
+             }
+             else
+             {  # install libc++
+                sudo apt update
+                sudo apt install -y libc++-dev libc++abi-dev
+
+                # Update the environment
+                "CXX=clang++" | Out-File $Env:GITHUB_ENV -Append -Encoding OEM
+             }
+
+      - name: use a cmake version able to build the std module
+        run: |
+             (cmake --version)[0] -match "cmake version (?<version>[\d\.]+)"
+             if ([version]$matches.version -lt [version]"4.1")
+             {  # older cmake cannot generate the `import std` target
+                $ver = "4.4.3"
+                curl -sSLo "$Env:RUNNER_TEMP/cmake.tar.gz" `
+                    "https://github.com/Kitware/CMake/releases/download/v$ver/cmake-$ver-linux-x86_64.tar.gz"
+                tar -xzf "$Env:RUNNER_TEMP/cmake.tar.gz" -C $Env:HOME
+
+                # Update the environment
+                "$Env:HOME/cmake-$ver-linux-x86_64/bin" | Out-File $Env:GITHUB_PATH -Append -Encoding OEM
+                & "$Env:HOME/cmake-$ver-linux-x86_64/bin/cmake" --version
+             }
+
+      - name: build/install examples from headers
         run: |
              cd examples
-             mkdir build
-             mkdir install
-             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
+             mkdir -p build/headers
+             mkdir -p install/headers
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/headers" `
                    -DCMAKE_BUILD_TYPE=RelWithDebInfo `
-                   -B ./build .
-             cmake --build ./build -j --target install
+                   -B ./build/headers .
+             cmake --build ./build/headers -j --target install
+
+      - name: build/install examples from modules
+        run: |
+             cd examples
+             mkdir -p build/modules
+             mkdir -p install/modules
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/modules" `
+                   -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+                   -DUSE_CXX_MODULES=ON `
+                   -B ./build/modules -G Ninja .
+             cmake --build ./build/modules -j --target install
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
@@ -162,15 +307,27 @@ jobs:
         with:
           path: examples
 
-      - name: build/install examples
+      - name: build/install examples from headers
         run: |
              cd examples
-             mkdir build
-             mkdir install
-             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install" `
+             mkdir -p build/headers
+             mkdir -p install/headers
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/headers" `
                    -DCMAKE_BUILD_TYPE=RelWithDebInfo `
-                   -B ./build .
-             cmake --build ./build -j --target install
+                   -B ./build/headers .
+             cmake --build ./build/headers -j --target install
+
+      - name: build/install examples from modules
+        if: false # Apple Clang on macOS does not support C++20 modules yet, so we skip the module build step.
+        run: |
+             cd examples
+             mkdir -p build/modules
+             mkdir -p install/modules
+             cmake -DCMAKE_INSTALL_PREFIX="$pwd/install/modules" `
+                   -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+                   -DUSE_CXX_MODULES=ON `
+                   -B ./build/modules -G Ninja .
+             cmake --build ./build/modules -j --target install
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7
