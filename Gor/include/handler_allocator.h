@@ -2,7 +2,7 @@
 #define HANDLER_ALLOCATOR
 
 #ifdef USE_CXX_MODULE
-    import std_proxy.array;
+    import std_proxy;
 #else
 #   include <array>
 #endif

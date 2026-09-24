@@ -2,10 +2,7 @@
 // > cl /EHsc /std:c++20 /Zi .\yield3.cpp
 
 #ifdef USE_CXX_MODULE
-    import std_proxy.coroutine;
-    import std_proxy.cstddef;
-    import std_proxy.iostream;
-    import std_proxy.numeric;
+    import std_proxy;
 #else
 #   include <coroutine>
 #   include <cstddef>

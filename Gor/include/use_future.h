@@ -2,7 +2,7 @@
 # define CORO_USE_FUTURE
 
 #ifdef USE_CXX_MODULE
-    import std_proxy.future;
+    import std_proxy;
 #else
 #   include <future>
 #endif

@@ -2,7 +2,7 @@
 // set makeprg=cl\ /Zi\ /EHsc\ /nologo\ /std:c++20\ /D\ _WIN32_WINNT=_WIN32_WINNT_WIN10\ /D\ ASIO_STANDALONE\ /I\ $TMP/build/asio.1.10.8/build/native/include/\ (gi\ %)
 
 #ifdef USE_CXX_MODULE
-    import std_proxy.iostream;
+    import std_proxy;
 #else
 #   include <iostream>
 #endif

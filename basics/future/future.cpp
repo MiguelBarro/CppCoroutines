@@ -1,13 +1,7 @@
 // > cl /EHsc /std:c++20 future.cpp
 
 #ifdef USE_CXX_MODULE
-    import std_proxy.chrono;
-    import std_proxy.coroutine;
-    import std_proxy.exception;
-    import std_proxy.future;
-    import std_proxy.iostream;
-    import std_proxy.thread;
-    import std_proxy.type_traits;
+    import std_proxy;
 #else
 #   include <chrono>
 #   include <coroutine>

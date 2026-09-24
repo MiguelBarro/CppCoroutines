@@ -9,12 +9,7 @@
 //
 
 #ifdef USE_CXX_MODULE
-    import std_proxy.algorithm;
-    import std_proxy.functional;
-    import std_proxy.iostream;
-    import std_proxy.list;
-    import std_proxy.memory;
-    import std_proxy.thread;
+    import std_proxy;
 #else
 #   include <algorithm>
 #   include <functional>

@@ -2,12 +2,7 @@
 // set makeprg=cl\ /Zi\ /EHsc\ /nologo\ /std:c++20\ %\ /link\ windowsapp.lib
 
 #ifdef USE_CXX_MODULE
-    import std_proxy.csignal;
-    import std_proxy.cstdint;
-    import std_proxy.cstdlib;
-    import std_proxy.format;
-    import std_proxy.iostream;
-    import std_proxy.list;
+    import std_proxy;
 
     import winrt.Windows.Foundation;
     import winrt.Windows.Networking.Sockets;

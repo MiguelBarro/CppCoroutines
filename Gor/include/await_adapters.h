@@ -2,9 +2,7 @@
 #define AWAIT_ADAPTERS
 
 #ifdef USE_CXX_MODULE
-    import std_proxy.algorithm;
-    import std_proxy.coroutine;
-    import std_proxy.optional;
+    import std_proxy;
 #else
 #   include <algorithm>
 #   include <coroutine>

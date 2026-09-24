@@ -2,8 +2,7 @@
 #define ASIO_FUTURE_AWAIT
 
 #ifdef USE_CXX_MODULE
-    import std_proxy.coroutine;
-    import std_proxy.memory;
+    import std_proxy;
 #else
 #   include <coroutine>
 #   include <memory>

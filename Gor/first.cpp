@@ -1,7 +1,5 @@
 #ifdef USE_CXX_MODULE
-    import std_proxy.coroutine;
-    import std_proxy.future;
-    import std_proxy.iostream;
+    import std_proxy;
 #else
 #   include <coroutine>
 #   include <future>
